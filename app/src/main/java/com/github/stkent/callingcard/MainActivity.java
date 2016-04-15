@@ -1,18 +1,21 @@
 package com.github.stkent.callingcard;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
@@ -32,13 +35,26 @@ import com.google.gson.JsonSyntaxException;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-import static android.widget.Toast.LENGTH_LONG;
-
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends BaseActivity
         implements ConnectionCallbacks, OnConnectionFailedListener, OnCheckedChangeListener {
 
-    private static final int PUBLISHING_ERROR_RESOLUTION_CODE = 10235321;
-    private static final int SUBSCRIBING_ERROR_RESOLUTION_CODE = 10236546;
+    private static final String TAG = "MainActivity";
+
+    private static final String USER_NAME_EXTRA_KEY = "USER_NAME_EXTRA_KEY";
+    private static final String USER_EMAIL_ADDRESS_EXTRA_KEY = "USER_EMAIL_ADDRESS_EXTRA_KEY";
+    private static final int PUBLISHING_ERROR_RESOLUTION_CODE = 5321;
+    private static final int SUBSCRIBING_ERROR_RESOLUTION_CODE = 6546;
+
+    protected static void launchWithCredentials(
+            @NonNull final String userName,
+            @NonNull final String userEmailAddress,
+            @NonNull final Context context) {
+
+        final Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra(USER_NAME_EXTRA_KEY, userName);
+        intent.putExtra(USER_EMAIL_ADDRESS_EXTRA_KEY, userEmailAddress);
+        context.startActivity(intent);
+    }
 
     private final PublishCallback publishCallback = new PublishCallback() {
         // Note: this seems to be invoked on a background thread!
@@ -61,7 +77,6 @@ public class MainActivity extends AppCompatActivity
              *   user forces the app to stop using Nearby. When this happens, the onExpired()
              *   method is triggered.
              */
-
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -91,6 +106,7 @@ public class MainActivity extends AppCompatActivity
             = new SubscribeOptions.Builder().setCallback(subscribeCallback).build();
 
     private final MessageListener messageListener = new MessageListener() {
+        // Invoked once when a newly-published message is detected.
         @Override
         public void onFound(final Message message) {
             try {
@@ -103,6 +119,7 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
+        // Invoked once when previously-received message is lost.
         @Override
         public void onLost(final Message message) {
             try {
@@ -129,7 +146,7 @@ public class MainActivity extends AppCompatActivity
     protected ReceivedDeviceDataView receivedDeviceDataView;
 
     private Message messageToPublish;
-    private GoogleApiClient googleApiClient;
+    private GoogleApiClient nearbyGoogleApiClient;
     private boolean attemptingToPublish = false;
     private boolean attemptingToSubscribe = false;
 
@@ -147,7 +164,7 @@ public class MainActivity extends AppCompatActivity
 
         messageToPublish = new Message(new Gson().toJson(deviceData).getBytes());
 
-        googleApiClient = new GoogleApiClient.Builder(this)
+        nearbyGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Nearby.MESSAGES_API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -155,11 +172,48 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(final Menu menu) {
+        final MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_sign_out:
+                if (signInGoogleApiClient.isConnected()) {
+                    Auth.GoogleSignInApi.signOut(signInGoogleApiClient).setResultCallback(
+                            new ResultCallback<Status>() {
+                                @Override
+                                public void onResult(@NonNull final Status status) {
+                                    cancelAllNearbyOperations();
+
+                                    MainActivity.this.startActivity(
+                                            new Intent(MainActivity.this, SignInActivity.class));
+
+                                    finish();
+                                }
+                            });
+                } else if (signInGoogleApiClient.isConnecting()) {
+                    toastSignOutFailedError();
+                } else {
+                    signInGoogleApiClient.connect();
+                    toastSignOutFailedError();
+                }
+
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
 
-        if (!googleApiClient.isConnected() && !googleApiClient.isConnecting()) {
-            googleApiClient.connect();
+        if (!nearbyGoogleApiClient.isConnected() && !nearbyGoogleApiClient.isConnecting()) {
+            nearbyGoogleApiClient.connect();
         }
     }
 
@@ -201,10 +255,10 @@ public class MainActivity extends AppCompatActivity
         switch (buttonView.getId()) {
             case R.id.publishing_switch:
                 if (publishingSwitch.isChecked()) {
-                    if (googleApiClient.isConnected()) {
+                    if (nearbyGoogleApiClient.isConnected()) {
                         attemptToPublish();
-                    } else if (!googleApiClient.isConnecting()) {
-                        googleApiClient.connect();
+                    } else if (!nearbyGoogleApiClient.isConnecting()) {
+                        nearbyGoogleApiClient.connect();
                     }
                 } else {
                     stopPublishing();
@@ -214,10 +268,10 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.subscribing_switch:
                 if (subscribingSwitch.isChecked()) {
-                    if (googleApiClient.isConnected()) {
+                    if (nearbyGoogleApiClient.isConnected()) {
                         attemptToSubscribe();
-                    } else if (!googleApiClient.isConnecting()) {
-                        googleApiClient.connect();
+                    } else if (!nearbyGoogleApiClient.isConnecting()) {
+                        nearbyGoogleApiClient.connect();
                     }
                 } else {
                     stopSubscribing();
@@ -251,8 +305,15 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onConnectionFailed(@NonNull final ConnectionResult connectionResult) {
+        super.onConnectionFailed(connectionResult);
+
         handleGoogleApiClientConnectionIssue();
         // TODO: all usual error handling and resolution goes here
+    }
+
+    @Override
+    protected String getLogTag() {
+        return TAG;
     }
 
     private void handleGoogleApiClientConnectionIssue() {
@@ -265,8 +326,8 @@ public class MainActivity extends AppCompatActivity
         publishingSwitch.setChecked(false);
         subscribingSwitch.setChecked(false);
 
-        if (googleApiClient.isConnected() || googleApiClient.isConnecting()) {
-            googleApiClient.disconnect();
+        if (nearbyGoogleApiClient.isConnected() || nearbyGoogleApiClient.isConnecting()) {
+            nearbyGoogleApiClient.disconnect();
         }
 
         receivedDeviceDataView.clearAllDeviceData();
@@ -275,7 +336,7 @@ public class MainActivity extends AppCompatActivity
     private void attemptToPublish() {
         attemptingToPublish = true;
 
-        Nearby.Messages.publish(googleApiClient, messageToPublish, publishOptions)
+        Nearby.Messages.publish(nearbyGoogleApiClient, messageToPublish, publishOptions)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(@NonNull final Status status) {
@@ -301,13 +362,13 @@ public class MainActivity extends AppCompatActivity
 
     private void stopPublishing() {
         // TODO: check PendingResult of this call and retry if it is not a success?
-        Nearby.Messages.unpublish(googleApiClient, messageToPublish);
+        Nearby.Messages.unpublish(nearbyGoogleApiClient, messageToPublish);
     }
 
     private void attemptToSubscribe() {
         attemptingToSubscribe = true;
 
-        Nearby.Messages.subscribe(googleApiClient, messageListener, subscribeOptions)
+        Nearby.Messages.subscribe(nearbyGoogleApiClient, messageListener, subscribeOptions)
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(@NonNull final Status status) {
@@ -333,19 +394,19 @@ public class MainActivity extends AppCompatActivity
 
     private void stopSubscribing() {
         // TODO: check PendingResult of this call and retry if it is not a success?
-        Nearby.Messages.unsubscribe(googleApiClient, messageListener);
+        Nearby.Messages.unsubscribe(nearbyGoogleApiClient, messageListener);
         receivedDeviceDataView.clearAllDeviceData();
     }
 
     private void syncSwitchStateWithGoogleApiClientState() {
-        final boolean googleApiClientConnected = googleApiClient.isConnected();
+        final boolean googleApiClientConnected = nearbyGoogleApiClient.isConnected();
 
         publishingSwitch.setEnabled(googleApiClientConnected);
         subscribingSwitch.setEnabled(googleApiClientConnected);
     }
 
-    private void toastError(@NonNull final String message) {
-        Toast.makeText(this, "Error: " + message, LENGTH_LONG).show();
+    private void toastSignOutFailedError() {
+        toastError("Sign out failed, please try again.");
     }
 
 }
