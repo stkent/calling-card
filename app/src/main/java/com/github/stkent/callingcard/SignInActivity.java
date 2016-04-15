@@ -15,7 +15,7 @@ import com.google.android.gms.common.SignInButton;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class SignInActivity extends BaseActivity implements OnClickListener {
+public final class SignInActivity extends BaseActivity implements OnClickListener {
 
     private static final String TAG = "SignInActivity";
     private static final int SIGN_IN_REQUEST_CODE = 9162;
@@ -63,11 +63,10 @@ public class SignInActivity extends BaseActivity implements OnClickListener {
             final GoogleSignInAccount account = result.getSignInAccount();
 
             if (account != null) {
-                final String userName = account.getDisplayName();
-                final String userEmailAddress = account.getEmail();
+                final UserData userData = new UserData(account);
 
-                if (userName != null && userEmailAddress != null) {
-                    MainActivity.launchWithCredentials(userName, userEmailAddress, this);
+                if (userData.isValid()) {
+                    MainActivity.launchWithUserData(userData, this);
                     finish();
                 } else {
                     toastError("Could not verify user name and email address.");

@@ -4,7 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.github.stkent.callingcard">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
+        android:name=".CustomApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

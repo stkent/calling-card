@@ -4,18 +4,20 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
-import android.widget.TextView;
 
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
@@ -30,29 +32,31 @@ import com.google.android.gms.nearby.messages.PublishOptions;
 import com.google.android.gms.nearby.messages.SubscribeCallback;
 import com.google.android.gms.nearby.messages.SubscribeOptions;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class MainActivity extends BaseActivity
+public final class MainActivity extends BaseActivity
         implements ConnectionCallbacks, OnConnectionFailedListener, OnCheckedChangeListener {
 
     private static final String TAG = "MainActivity";
 
-    private static final String USER_NAME_EXTRA_KEY = "USER_NAME_EXTRA_KEY";
-    private static final String USER_EMAIL_ADDRESS_EXTRA_KEY = "USER_EMAIL_ADDRESS_EXTRA_KEY";
+    private static final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(Uri.class, new UriTypeAdapter())
+            .create();
+
+    private static final String USER_DATA_EXTRA_KEY = "USER_DATA_EXTRA_KEY";
     private static final int PUBLISHING_ERROR_RESOLUTION_CODE = 5321;
     private static final int SUBSCRIBING_ERROR_RESOLUTION_CODE = 6546;
 
-    protected static void launchWithCredentials(
-            @NonNull final String userName,
-            @NonNull final String userEmailAddress,
+    protected static void launchWithUserData(
+            @NonNull final UserData userData,
             @NonNull final Context context) {
 
         final Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra(USER_NAME_EXTRA_KEY, userName);
-        intent.putExtra(USER_EMAIL_ADDRESS_EXTRA_KEY, userEmailAddress);
+        intent.putExtra(USER_DATA_EXTRA_KEY, userData);
         context.startActivity(intent);
     }
 
@@ -110,12 +114,13 @@ public class MainActivity extends BaseActivity
         @Override
         public void onFound(final Message message) {
             try {
-                final DeviceData deviceData
-                        = new Gson().fromJson(new String(message.getContent()), DeviceData.class);
+                final UserData userData
+                        = GSON.fromJson(new String(message.getContent()), UserData.class);
 
-                receivedDeviceDataView.addDeviceData(deviceData);
-            } catch (final JsonSyntaxException ignored) {
+                receivedDeviceDataView.addDeviceData(userData);
+            } catch (final JsonSyntaxException e) {
                 toastError("Invalid message received!");
+                Log.e(TAG, "Invalid message exception:", e);
             }
         }
 
@@ -123,10 +128,10 @@ public class MainActivity extends BaseActivity
         @Override
         public void onLost(final Message message) {
             try {
-                final DeviceData deviceData
-                        = new Gson().fromJson(new String(message.getContent()), DeviceData.class);
+                final UserData userData
+                        = GSON.fromJson(new String(message.getContent()), UserData.class);
 
-                receivedDeviceDataView.removeDeviceData(deviceData);
+                receivedDeviceDataView.removeDeviceData(userData);
             } catch (final JsonSyntaxException ignored) {
                 toastError("Invalid message reported as lost!");
             }
@@ -136,8 +141,8 @@ public class MainActivity extends BaseActivity
     @Bind(R.id.publishing_switch)
     protected Switch publishingSwitch;
 
-    @Bind(R.id.published_message_field)
-    protected TextView publishedMessageField;
+    @Bind(R.id.published_user_view)
+    protected UserView publishedUserView;
 
     @Bind(R.id.subscribing_switch)
     protected Switch subscribingSwitch;
@@ -159,10 +164,11 @@ public class MainActivity extends BaseActivity
         publishingSwitch.setOnCheckedChangeListener(this);
         subscribingSwitch.setOnCheckedChangeListener(this);
 
-        final DeviceData deviceData = new DeviceData(this);
-        publishedMessageField.setText(deviceData.toString());
+        final UserData userData = getIntent().getParcelableExtra(USER_DATA_EXTRA_KEY);
 
-        messageToPublish = new Message(new Gson().toJson(deviceData).getBytes());
+        publishedUserView.bindUserData(userData);
+
+        messageToPublish = new Message(GSON.toJson(userData).getBytes());
 
         nearbyGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Nearby.MESSAGES_API)
@@ -314,6 +320,17 @@ public class MainActivity extends BaseActivity
     @Override
     protected String getLogTag() {
         return TAG;
+    }
+
+    @Override
+    protected void handleSignInResult(final GoogleSignInResult result) {
+        super.handleSignInResult(result);
+
+        if (!result.isSuccess()) {
+            toastError("Sign-in required.");
+            startActivity(new Intent(this, SignInActivity.class));
+            finish();
+        }
     }
 
     private void handleGoogleApiClientConnectionIssue() {

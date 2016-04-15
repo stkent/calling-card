@@ -5,10 +5,6 @@ import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.TextView;
-
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 public class ReceivedDeviceDataView extends LinearLayout {
     public ReceivedDeviceDataView(Context context) {
@@ -25,15 +21,14 @@ public class ReceivedDeviceDataView extends LinearLayout {
         setOrientation(VERTICAL);
     }
 
-    public void addDeviceData(@NonNull final DeviceData deviceData) {
-        final TextView textView = new TextView(getContext());
-        textView.setText(deviceData.toString());
-        textView.setTag(deviceData.getDeviceId());
-        addView(textView, new LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+    public void addDeviceData(@NonNull final UserData userData) {
+        final UserView userView = new UserView(getContext());
+        userView.bindUserData(userData);
+        addView(userView);
     }
 
-    public void removeDeviceData(@NonNull final DeviceData deviceData) {
-        final String deviceIdToRemove = deviceData.getDeviceId();
+    public void removeDeviceData(@NonNull final UserData userData) {
+        final String deviceIdToRemove = userData.getId();
 
         for (int index = getChildCount() - 1; index >= 0; index--) {
             final View child = getChildAt(index);
