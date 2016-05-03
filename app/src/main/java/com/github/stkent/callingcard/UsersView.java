@@ -6,41 +6,42 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
 
-public class ReceivedDeviceDataView extends LinearLayout {
-    public ReceivedDeviceDataView(Context context) {
+public class UsersView extends LinearLayout {
+
+    public UsersView(Context context) {
         this(context, null);
     }
 
-    public ReceivedDeviceDataView(Context context, AttributeSet attrs) {
+    public UsersView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public ReceivedDeviceDataView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public UsersView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
         setOrientation(VERTICAL);
     }
 
-    public void addDeviceData(@NonNull final UserData userData) {
+    public void addUser(@NonNull final User user) {
         final UserView userView = new UserView(getContext());
-        userView.bindUserData(userData);
+        userView.bindUser(user);
         addView(userView);
     }
 
-    public void removeDeviceData(@NonNull final UserData userData) {
-        final String deviceIdToRemove = userData.getId();
+    public void removeUser(@NonNull final User user) {
+        final String idOfUserToRemove = user.getId();
 
         for (int index = getChildCount() - 1; index >= 0; index--) {
             final View child = getChildAt(index);
-            final String deviceId = (String) child.getTag();
+            final String userId = (String) child.getTag();
 
-            if (deviceIdToRemove.equals(deviceId)) {
+            if (idOfUserToRemove.equals(userId)) {
                 removeViewAt(index);
             }
         }
     }
 
-    public void clearAllDeviceData() {
+    public void removeAllUsers() {
         removeAllViews();
     }
 

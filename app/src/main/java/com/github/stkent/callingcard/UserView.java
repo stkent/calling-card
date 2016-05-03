@@ -57,19 +57,18 @@ public final class UserView extends CardView {
         setContentPadding(padding, padding, padding, padding);
 
         LayoutInflater.from(context).inflate(R.layout.include_user_view, this);
-
         ButterKnife.bind(this);
     }
 
-    public void bindUserData(@NonNull final UserData userData) {
-        nameField.setText(userData.getName());
-        emailAddressField.setText(userData.getEmailAddress());
+    public void bindUser(@NonNull final User user) {
+        nameField.setText(user.getName());
+        emailAddressField.setText(user.getEmailAddress());
 
-        final Uri photoUrl = userData.getPhotoUrl();
+        final Uri photoUrl = user.getPhotoUrl();
 
         if (photoUrl != null) {
-            Log.d(TAG, "bindUserData: User photo URL found: " + photoUrl);
-            Log.d(TAG, "bindUserData: Loading photo...");
+            Log.d(TAG, "bindUser: User photo URL found: " + photoUrl);
+            Log.d(TAG, "bindUser: Loading photo...");
 
             Picasso.with(getContext())
                     .load(photoUrl)
@@ -78,7 +77,7 @@ public final class UserView extends CardView {
                     .fit()
                     .into(photoImageView);
         } else {
-            Log.d(TAG, "bindUserData: No user photo URL found.");
+            Log.d(TAG, "bindUser: No user photo URL found.");
 
             Picasso.with(getContext())
                     .load(PLACEHOLDER_IMAGE_RES)
@@ -87,7 +86,7 @@ public final class UserView extends CardView {
                     .into(photoImageView);
         }
 
-        setTag(userData.getId());
+        setTag(user.getId());
     }
 
 }

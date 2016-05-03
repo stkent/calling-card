@@ -9,7 +9,7 @@ import android.support.annotation.Nullable;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.gson.annotations.Expose;
 
-public final class UserData implements Parcelable {
+public final class User implements Parcelable {
 
     // Required fields; values must be populated from a valid Google Account
 
@@ -31,7 +31,7 @@ public final class UserData implements Parcelable {
     @Nullable
     private final Uri photoUrl;
 
-    public UserData(@NonNull final GoogleSignInAccount googleSignInAccount) {
+    public User(@NonNull final GoogleSignInAccount googleSignInAccount) {
         this.name = googleSignInAccount.getDisplayName();
         this.emailAddress = googleSignInAccount.getEmail();
 
@@ -90,22 +90,22 @@ public final class UserData implements Parcelable {
         dest.writeParcelable(this.photoUrl, flags);
     }
 
-    protected UserData(@NonNull final Parcel in) {
+    protected User(@NonNull final Parcel in) {
         this.name = in.readString();
         this.emailAddress = in.readString();
         this.id = in.readString();
         this.photoUrl = in.readParcelable(Uri.class.getClassLoader());
     }
 
-    public static final Parcelable.Creator<UserData> CREATOR = new Parcelable.Creator<UserData>() {
+    public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>() {
         @Override
-        public UserData createFromParcel(final Parcel source) {
-            return new UserData(source);
+        public User createFromParcel(final Parcel source) {
+            return new User(source);
         }
 
         @Override
-        public UserData[] newArray(final int size) {
-            return new UserData[size];
+        public User[] newArray(final int size) {
+            return new User[size];
         }
     };
 

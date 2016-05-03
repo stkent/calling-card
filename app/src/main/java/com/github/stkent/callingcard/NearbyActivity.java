@@ -38,7 +38,7 @@ import com.google.gson.JsonSyntaxException;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public final class MainActivity extends BaseActivity
+public final class NearbyActivity extends BaseActivity
         implements ConnectionCallbacks, OnConnectionFailedListener, OnCheckedChangeListener {
 
     private static final String TAG = "MainActivity";
@@ -52,11 +52,11 @@ public final class MainActivity extends BaseActivity
     private static final int SUBSCRIBING_ERROR_RESOLUTION_CODE = 6546;
 
     protected static void launchWithUserData(
-            @NonNull final UserData userData,
+            @NonNull final User user,
             @NonNull final Context context) {
 
-        final Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra(USER_DATA_EXTRA_KEY, userData);
+        final Intent intent = new Intent(context, NearbyActivity.class);
+        intent.putExtra(USER_DATA_EXTRA_KEY, user);
         context.startActivity(intent);
     }
 
@@ -114,10 +114,10 @@ public final class MainActivity extends BaseActivity
         @Override
         public void onFound(final Message message) {
             try {
-                final UserData userData
-                        = GSON.fromJson(new String(message.getContent()), UserData.class);
+                final User user
+                        = GSON.fromJson(new String(message.getContent()), User.class);
 
-                receivedDeviceDataView.addDeviceData(userData);
+                usersView.addUser(user);
             } catch (final JsonSyntaxException e) {
                 toastError("Invalid message received!");
                 Log.e(TAG, "Invalid message exception:", e);
@@ -128,10 +128,10 @@ public final class MainActivity extends BaseActivity
         @Override
         public void onLost(final Message message) {
             try {
-                final UserData userData
-                        = GSON.fromJson(new String(message.getContent()), UserData.class);
+                final User user
+                        = GSON.fromJson(new String(message.getContent()), User.class);
 
-                receivedDeviceDataView.removeDeviceData(userData);
+                usersView.removeUser(user);
             } catch (final JsonSyntaxException ignored) {
                 toastError("Invalid message reported as lost!");
             }
@@ -147,8 +147,8 @@ public final class MainActivity extends BaseActivity
     @Bind(R.id.subscribing_switch)
     protected Switch subscribingSwitch;
 
-    @Bind(R.id.received_device_data_view)
-    protected ReceivedDeviceDataView receivedDeviceDataView;
+    @Bind(R.id.users_view)
+    protected UsersView usersView;
 
     private Message messageToPublish;
     private GoogleApiClient nearbyGoogleApiClient;
@@ -164,11 +164,11 @@ public final class MainActivity extends BaseActivity
         publishingSwitch.setOnCheckedChangeListener(this);
         subscribingSwitch.setOnCheckedChangeListener(this);
 
-        final UserData userData = getIntent().getParcelableExtra(USER_DATA_EXTRA_KEY);
+        final User user = getIntent().getParcelableExtra(USER_DATA_EXTRA_KEY);
 
-        publishedUserView.bindUserData(userData);
+        publishedUserView.bindUser(user);
 
-        messageToPublish = new Message(GSON.toJson(userData).getBytes());
+        messageToPublish = new Message(GSON.toJson(user).getBytes());
 
         nearbyGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Nearby.MESSAGES_API)
@@ -195,8 +195,8 @@ public final class MainActivity extends BaseActivity
                                 public void onResult(@NonNull final Status status) {
                                     cancelAllNearbyOperations();
 
-                                    MainActivity.this.startActivity(
-                                            new Intent(MainActivity.this, SignInActivity.class));
+                                    NearbyActivity.this.startActivity(
+                                            new Intent(NearbyActivity.this, SignInActivity.class));
 
                                     finish();
                                 }
@@ -347,7 +347,7 @@ public final class MainActivity extends BaseActivity
             nearbyGoogleApiClient.disconnect();
         }
 
-        receivedDeviceDataView.clearAllDeviceData();
+        usersView.removeAllUsers();
     }
 
     private void attemptToPublish() {
@@ -362,7 +362,7 @@ public final class MainActivity extends BaseActivity
                         } else if (status.hasResolution()) {
                             try {
                                 status.startResolutionForResult(
-                                        MainActivity.this, PUBLISHING_ERROR_RESOLUTION_CODE);
+                                        NearbyActivity.this, PUBLISHING_ERROR_RESOLUTION_CODE);
 
                             } catch (final IntentSender.SendIntentException e) {
                                 attemptingToPublish = false;
@@ -394,7 +394,7 @@ public final class MainActivity extends BaseActivity
                         } else if (status.hasResolution()) {
                             try {
                                 status.startResolutionForResult(
-                                        MainActivity.this, SUBSCRIBING_ERROR_RESOLUTION_CODE);
+                                        NearbyActivity.this, SUBSCRIBING_ERROR_RESOLUTION_CODE);
 
                             } catch (final IntentSender.SendIntentException e) {
                                 attemptingToSubscribe = false;
@@ -412,7 +412,7 @@ public final class MainActivity extends BaseActivity
     private void stopSubscribing() {
         // TODO: check PendingResult of this call and retry if it is not a success?
         Nearby.Messages.unsubscribe(nearbyGoogleApiClient, messageListener);
-        receivedDeviceDataView.clearAllDeviceData();
+        usersView.removeAllUsers();
     }
 
     private void syncSwitchStateWithGoogleApiClientState() {

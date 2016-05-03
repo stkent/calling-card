@@ -39,8 +39,8 @@
             android:layout_height="wrap_content"
             android:paddingBottom="16dp" />
 
-        <com.github.stkent.callingcard.ReceivedDeviceDataView
-            android:id="@+id/received_device_data_view"
+        <com.github.stkent.callingcard.UsersView
+            android:id="@+id/users_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" />

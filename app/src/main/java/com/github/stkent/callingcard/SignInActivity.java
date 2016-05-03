@@ -63,10 +63,10 @@ public final class SignInActivity extends BaseActivity implements OnClickListene
             final GoogleSignInAccount account = result.getSignInAccount();
 
             if (account != null) {
-                final UserData userData = new UserData(account);
+                final User user = new User(account);
 
-                if (userData.isValid()) {
-                    MainActivity.launchWithUserData(userData, this);
+                if (user.isValid()) {
+                    NearbyActivity.launchWithUserData(user, this);
                     finish();
                 } else {
                     toastError("Could not verify user name and email address.");
