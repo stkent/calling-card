@@ -142,7 +142,7 @@ public final class NearbyActivity extends BaseActivity
     protected Switch publishingSwitch;
 
     @Bind(R.id.published_user_view)
-    protected UserView publishedUserView;
+    protected PublishedUserView publishedUserView;
 
     @Bind(R.id.subscribing_switch)
     protected Switch subscribingSwitch;
@@ -158,7 +158,7 @@ public final class NearbyActivity extends BaseActivity
     @Override
     protected void onCreate(@Nullable final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_nearby);
         ButterKnife.bind(this);
 
         publishingSwitch.setOnCheckedChangeListener(this);
@@ -358,6 +358,7 @@ public final class NearbyActivity extends BaseActivity
                     @Override
                     public void onResult(@NonNull final Status status) {
                         if (status.isSuccess()) {
+                            publishedUserView.setPublishing(true);
                             attemptingToPublish = false;
                         } else if (status.hasResolution()) {
                             try {
@@ -380,6 +381,7 @@ public final class NearbyActivity extends BaseActivity
     private void stopPublishing() {
         // TODO: check PendingResult of this call and retry if it is not a success?
         Nearby.Messages.unpublish(nearbyGoogleApiClient, messageToPublish);
+        publishedUserView.setPublishing(false);
     }
 
     private void attemptToSubscribe() {

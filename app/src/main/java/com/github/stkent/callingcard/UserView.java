@@ -21,7 +21,7 @@ import butterknife.ButterKnife;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
-public final class UserView extends CardView {
+public class UserView extends CardView {
 
     private static final String TAG = "UserView";
 

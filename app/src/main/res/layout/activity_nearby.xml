@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             android:paddingBottom="16dp" />
 
-        <com.github.stkent.callingcard.UserView
+        <com.github.stkent.callingcard.PublishedUserView
             android:id="@+id/published_user_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
