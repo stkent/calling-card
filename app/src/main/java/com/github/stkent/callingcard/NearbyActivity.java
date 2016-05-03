@@ -114,8 +114,7 @@ public final class NearbyActivity extends BaseActivity
         @Override
         public void onFound(final Message message) {
             try {
-                final User user
-                        = GSON.fromJson(new String(message.getContent()), User.class);
+                final User user = GSON.fromJson(new String(message.getContent()), User.class);
 
                 usersView.addUser(user);
             } catch (final JsonSyntaxException e) {
@@ -128,8 +127,7 @@ public final class NearbyActivity extends BaseActivity
         @Override
         public void onLost(final Message message) {
             try {
-                final User user
-                        = GSON.fromJson(new String(message.getContent()), User.class);
+                final User user = GSON.fromJson(new String(message.getContent()), User.class);
 
                 usersView.removeUser(user);
             } catch (final JsonSyntaxException ignored) {
@@ -357,19 +355,25 @@ public final class NearbyActivity extends BaseActivity
                 .setResultCallback(new ResultCallback<Status>() {
                     @Override
                     public void onResult(@NonNull final Status status) {
-                        if (status.isSuccess()) {
+                        if (status.isSuccess() && publishingSwitch.isChecked()) {
                             publishedUserView.setPublishing(true);
                             attemptingToPublish = false;
-                        } else if (status.hasResolution()) {
+                        } else if (status.hasResolution() && publishingSwitch.isChecked()) {
                             try {
                                 status.startResolutionForResult(
                                         NearbyActivity.this, PUBLISHING_ERROR_RESOLUTION_CODE);
 
                             } catch (final IntentSender.SendIntentException e) {
+                                publishedUserView.setPublishing(false);
                                 attemptingToPublish = false;
                                 toastError(status.getStatusMessage());
                             }
                         } else {
+                            /*
+                             * This branch will be hit if we cancel publishing before the initial
+                             * call to publish has completed (determined experimentally).
+                             */
+                            publishedUserView.setPublishing(false);
                             attemptingToPublish = false;
                             toastError(status.getStatusMessage());
                             // TODO: error-specific handling if desired
@@ -393,7 +397,7 @@ public final class NearbyActivity extends BaseActivity
                     public void onResult(@NonNull final Status status) {
                         if (status.isSuccess()) {
                             attemptingToSubscribe = false;
-                        } else if (status.hasResolution()) {
+                        } else if (status.hasResolution() && subscribingSwitch.isChecked()) {
                             try {
                                 status.startResolutionForResult(
                                         NearbyActivity.this, SUBSCRIBING_ERROR_RESOLUTION_CODE);
@@ -403,6 +407,10 @@ public final class NearbyActivity extends BaseActivity
                                 toastError(status.getStatusMessage());
                             }
                         } else {
+                            /*
+                             * This branch will be hit if we cancel subscribing before the initial
+                             * call to subscribe has completed (determined experimentally).
+                             */
                             attemptingToSubscribe = false;
                             toastError(status.getStatusMessage());
                             // TODO: error-specific handling if desired

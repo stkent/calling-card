@@ -86,9 +86,11 @@ public abstract class BaseActivity extends AppCompatActivity implements OnConnec
         toastError(connectionFailedMessage);
     }
 
-    protected final void toastError(@NonNull final String message) {
-        Log.e(getLogTag(), message);
-        Toast.makeText(this, "Error: " + message, LENGTH_LONG).show();
+    protected final void toastError(@Nullable final String message) {
+        if (message != null) {
+            Log.e(getLogTag(), message);
+            Toast.makeText(this, "Error: " + message, LENGTH_LONG).show();
+        }
     }
 
     @CallSuper
