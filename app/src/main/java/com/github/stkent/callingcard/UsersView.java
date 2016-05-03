@@ -23,9 +23,11 @@ public final class UsersView extends LinearLayout {
     }
 
     public void addUser(@NonNull final User user) {
-        final UserView userView = new UserView(getContext());
-        userView.bindUser(user);
-        addView(userView);
+        if (user.isValid()) {
+            final UserView userView = new UserView(getContext());
+            userView.bindUser(user);
+            addView(userView);
+        }
     }
 
     public void removeUser(@NonNull final User user) {
