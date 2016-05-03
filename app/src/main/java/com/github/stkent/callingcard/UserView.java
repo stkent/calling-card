@@ -60,7 +60,7 @@ public class UserView extends CardView {
         ButterKnife.bind(this);
     }
 
-    public void bindUser(@NonNull final User user) {
+    public final void bindUser(@NonNull final User user) {
         nameField.setText(user.getName());
         emailAddressField.setText(user.getEmailAddress());
 

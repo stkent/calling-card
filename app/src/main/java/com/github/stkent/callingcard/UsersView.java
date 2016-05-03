@@ -6,7 +6,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
 
-public class UsersView extends LinearLayout {
+public final class UsersView extends LinearLayout {
 
     public UsersView(Context context) {
         this(context, null);

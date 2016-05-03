@@ -6,7 +6,7 @@ import android.util.Log;
 
 import com.squareup.picasso.Picasso;
 
-public class CustomApplication extends Application {
+public final class CustomApplication extends Application {
 
     private static final String TAG = "CustomApplication";
 

@@ -6,7 +6,7 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 
-public class PublishedUserView extends UserView {
+public final class PublishedUserView extends UserView {
 
     @ColorInt
     private static final int publishingBackgroundColor = Color.argb(102, 113, 217, 114);
