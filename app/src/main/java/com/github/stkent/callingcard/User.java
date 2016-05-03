@@ -22,7 +22,7 @@ public final class User implements Parcelable {
     private final String emailAddress;
 
     @Expose
-    @NonNull
+    // NonNull whenever isValid returns true;
     private final String id;
 
     // Optional fields
@@ -72,7 +72,7 @@ public final class User implements Parcelable {
     }
 
     public boolean isValid() {
-        return name != null && emailAddress != null;
+        return name != null && emailAddress != null && id != null;
     }
 
     // Parcelable
