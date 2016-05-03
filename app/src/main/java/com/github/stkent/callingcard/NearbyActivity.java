@@ -371,7 +371,7 @@ public final class NearbyActivity extends BaseActivity
                         } else {
                             /*
                              * This branch will be hit if we cancel publishing before the initial
-                             * call to publish has completed (determined experimentally).
+                             * async call to publish has completed (determined experimentally).
                              */
                             publishedUserView.setPublishing(false);
                             attemptingToPublish = false;
@@ -409,7 +409,7 @@ public final class NearbyActivity extends BaseActivity
                         } else {
                             /*
                              * This branch will be hit if we cancel subscribing before the initial
-                             * call to subscribe has completed (determined experimentally).
+                             * async call to subscribe has completed (determined experimentally).
                              */
                             attemptingToSubscribe = false;
                             toastError(status.getStatusMessage());
