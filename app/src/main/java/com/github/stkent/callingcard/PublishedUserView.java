@@ -3,17 +3,16 @@ package com.github.stkent.callingcard;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.ColorInt;
-import android.support.annotation.IntRange;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 
 public class PublishedUserView extends UserView {
 
     @ColorInt
-    private static final int publishingBorderColor = Color.rgb(113, 217, 114);
+    private static final int publishingBackgroundColor = Color.argb(102, 113, 217, 114);
 
     @ColorInt
-    private static final int notPublishingBorderColor = Color.rgb(255, 127, 128);
+    private static final int notPublishingBackgroundColor = Color.argb(102, 255, 127, 128);
 
     public PublishedUserView(final Context context) {
         this(context, null);
@@ -29,27 +28,16 @@ public class PublishedUserView extends UserView {
             final int defStyleAttr) {
 
         super(context, attrs, defStyleAttr);
+
+        // Default to not publishing background color.
+        setCardBackgroundColor(notPublishingBackgroundColor);
     }
 
     public void setPublishing(final boolean publishing) {
-        final int borderColor = publishing ? publishingBorderColor : notPublishingBorderColor;
+        final int backgroundColor
+                = publishing ? publishingBackgroundColor : notPublishingBackgroundColor;
 
-        final int backgroundColor = getColorWithAlpha(borderColor, 102);
-
-        // todo: set border color here
-        setBackgroundColor(backgroundColor);
-    }
-
-    @ColorInt
-    private static int getColorWithAlpha(
-            @ColorInt final int colorInt,
-            @IntRange(from = 0, to = 255) final int alpha) {
-
-        return Color.argb(
-                alpha,
-                Color.red(colorInt),
-                Color.green(colorInt),
-                Color.blue(colorInt));
+        setCardBackgroundColor(backgroundColor);
     }
 
 }
