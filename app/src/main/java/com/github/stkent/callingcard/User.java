@@ -61,7 +61,6 @@ public final class User implements Parcelable {
         return emailAddress;
     }
 
-    @NonNull
     public String getId() {
         return id;
     }
