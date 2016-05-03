@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
@@ -34,6 +35,8 @@ import com.google.android.gms.nearby.messages.SubscribeOptions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -147,6 +150,12 @@ public final class NearbyActivity extends BaseActivity
 
     @Bind(R.id.users_view)
     protected UsersView usersView;
+
+    @Bind({R.id.saved_cards_label, R.id.saved_users_view})
+    protected List<View> savedUsersViews;
+
+    @Bind(R.id.saved_users_view)
+    protected UsersView savedUsersView;
 
     private Message messageToPublish;
     private GoogleApiClient nearbyGoogleApiClient;

@@ -1,5 +1,6 @@
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="16dp">
@@ -43,7 +44,21 @@
             android:id="@+id/users_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            app:empty_state_text="No nearby users detected!" />
+
+        <TextView
+            android:id="@+id/saved_cards_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Saved Cards"
+            android:textSize="20sp"
+            android:paddingTop="16dp" />
+
+        <com.github.stkent.callingcard.UsersView
+            android:id="@+id/saved_users_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:empty_state_text="No saved cards found!" />
 
     </LinearLayout>
 
