@@ -85,8 +85,6 @@ public class UserView extends CardView {
                     .fit()
                     .into(photoImageView);
         }
-
-        setTag(user.getId());
     }
 
 }

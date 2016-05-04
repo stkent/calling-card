@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.Bind;
@@ -26,6 +27,8 @@ public final class UsersView extends LinearLayout {
 
     @Bind(R.id.user_view_container)
     protected ViewGroup userViewContainer;
+
+    private final List<User> displayedUsers = new ArrayList<>();
 
     public UsersView(@NonNull final Context context) {
         this(context, null);
@@ -57,11 +60,15 @@ public final class UsersView extends LinearLayout {
         typedArray.recycle();
     }
 
-    public void addUser(@NonNull final User user) {
-        if (user.isValid()) {
+    public void addUser(@NonNull final User userToAdd) {
+        if (userToAdd.isValid() && !displayedUsers.contains(userToAdd)) {
             final UserView userView = new UserView(getContext());
-            userView.bindUser(user);
+            userView.bindUser(userToAdd);
+            userView.setTag(userToAdd);
             userViewContainer.addView(userView);
+
+            displayedUsers.add(userToAdd);
+
             updateEmptyStateVisibility();
         }
     }
@@ -74,15 +81,20 @@ public final class UsersView extends LinearLayout {
         }
     }
 
-    public void removeUser(@NonNull final User user) {
-        final String idOfUserToRemove = user.getId();
+    public void removeUser(@NonNull final User userToRemove) {
+        if (!displayedUsers.contains(userToRemove)) {
+            return;
+        }
 
         for (int index = userViewContainer.getChildCount() - 1; index >= 0; index--) {
             final View child = getChildAt(index);
-            final String userId = (String) child.getTag();
+            final User viewUser = (User) child.getTag();
 
-            if (idOfUserToRemove.equals(userId)) {
+            if (userToRemove.equals(viewUser)) {
                 removeViewAt(index);
+
+                displayedUsers.remove(userToRemove);
+
                 updateEmptyStateVisibility();
             }
         }
@@ -90,11 +102,14 @@ public final class UsersView extends LinearLayout {
 
     public void removeAllUsers() {
         userViewContainer.removeAllViews();
+
+        displayedUsers.clear();
+
         updateEmptyStateVisibility();
     }
 
     private void updateEmptyStateVisibility() {
-        emptyStateLabel.setVisibility(userViewContainer.getChildCount() == 0 ? VISIBLE : GONE);
+        emptyStateLabel.setVisibility(displayedUsers.size() == 0 ? VISIBLE : GONE);
     }
 
 }
