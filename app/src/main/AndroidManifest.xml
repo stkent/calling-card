@@ -20,16 +20,21 @@
             android:value="AIzaSyAs64F4PY-7Vq8PqKSsC6949js1gBjsX2c" />
 
         <activity
-            android:name=".SignInActivity">
+            android:name=".SignInActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait">
 
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
         </activity>
 
-        <activity android:name=".NearbyActivity" />
+        <activity
+            android:name=".NearbyActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
 
     </application>
 
