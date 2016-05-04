@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -159,6 +160,7 @@ public final class NearbyActivity extends BaseActivity
 
     private Message messageToPublish;
     private GoogleApiClient nearbyGoogleApiClient;
+    private SavedUsersManager savedUsersManager;
     private boolean attemptingToPublish = false;
     private boolean attemptingToSubscribe = false;
 
@@ -172,10 +174,10 @@ public final class NearbyActivity extends BaseActivity
         subscribingSwitch.setOnCheckedChangeListener(this);
 
         final User user = getIntent().getParcelableExtra(USER_DATA_EXTRA_KEY);
-
         publishedUserView.bindUser(user);
-
         messageToPublish = new Message(GSON.toJson(user).getBytes());
+
+        savedUsersManager = new SavedUsersManager();
 
         nearbyGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Nearby.MESSAGES_API)
