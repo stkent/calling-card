@@ -299,7 +299,7 @@ public final class NearbyActivity extends BaseActivity
 
     @Override
     public void onConnected(@Nullable final Bundle bundle) {
-        syncSwitchStateWithGoogleApiClientState();
+        syncSwitchEnabledStatesWithGoogleApiClientState();
 
         if (publishingSwitch.isChecked()) {
             attemptToPublish();
@@ -312,15 +312,14 @@ public final class NearbyActivity extends BaseActivity
 
     @Override
     public void onConnectionSuspended(final int i) {
-        handleGoogleApiClientConnectionIssue();
+        cancelAllNearbyOperations();
         // TODO: all usual error handling and resolution goes here
     }
 
     @Override
     public void onConnectionFailed(@NonNull final ConnectionResult connectionResult) {
         super.onConnectionFailed(connectionResult);
-
-        handleGoogleApiClientConnectionIssue();
+        cancelAllNearbyOperations();
         // TODO: all usual error handling and resolution goes here
     }
 
@@ -340,12 +339,6 @@ public final class NearbyActivity extends BaseActivity
         }
     }
 
-    private void handleGoogleApiClientConnectionIssue() {
-        syncSwitchStateWithGoogleApiClientState();
-        publishingSwitch.setChecked(false);
-        subscribingSwitch.setChecked(false);
-    }
-
     private void cancelAllNearbyOperations() {
         publishingSwitch.setChecked(false);
         subscribingSwitch.setChecked(false);
@@ -353,6 +346,8 @@ public final class NearbyActivity extends BaseActivity
         if (nearbyGoogleApiClient.isConnected() || nearbyGoogleApiClient.isConnecting()) {
             nearbyGoogleApiClient.disconnect();
         }
+
+        syncSwitchEnabledStatesWithGoogleApiClientState();
 
         usersView.removeAllUsers();
     }
@@ -434,7 +429,7 @@ public final class NearbyActivity extends BaseActivity
         usersView.removeAllUsers();
     }
 
-    private void syncSwitchStateWithGoogleApiClientState() {
+    private void syncSwitchEnabledStatesWithGoogleApiClientState() {
         final boolean googleApiClientConnected = nearbyGoogleApiClient.isConnected();
 
         publishingSwitch.setEnabled(googleApiClientConnected);

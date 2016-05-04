@@ -80,6 +80,7 @@ public abstract class BaseActivity extends AppCompatActivity implements OnConnec
     }
 
     @Override
+    @CallSuper
     public void onConnectionFailed(@NonNull final ConnectionResult connectionResult) {
         final String connectionFailedMessage = "Google API Client connection failed.";
 
