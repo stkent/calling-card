@@ -36,6 +36,7 @@ public final class SavedUsersManager {
         }
 
         // todo: handle parsing failures here...
+        // todo: this should be handled off the main thread
         return configuredGsonInstance
                 .fromJson(savedUsersString, new TypeToken<List<User>>(){}.getType());
     }

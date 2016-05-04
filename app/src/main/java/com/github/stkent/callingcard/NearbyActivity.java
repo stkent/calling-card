@@ -4,16 +4,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
@@ -36,8 +35,6 @@ import com.google.android.gms.nearby.messages.SubscribeOptions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-
-import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -152,9 +149,6 @@ public final class NearbyActivity extends BaseActivity
     @Bind(R.id.users_view)
     protected UsersView usersView;
 
-    @Bind({R.id.saved_cards_label, R.id.saved_users_view})
-    protected List<View> savedUsersViews;
-
     @Bind(R.id.saved_users_view)
     protected UsersView savedUsersView;
 
@@ -177,7 +171,9 @@ public final class NearbyActivity extends BaseActivity
         publishedUserView.bindUser(user);
         messageToPublish = new Message(GSON.toJson(user).getBytes());
 
-        savedUsersManager = new SavedUsersManager();
+        savedUsersManager = new SavedUsersManager(
+                PreferenceManager.getDefaultSharedPreferences(this),
+                GSON);
 
         nearbyGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Nearby.MESSAGES_API)
@@ -226,6 +222,8 @@ public final class NearbyActivity extends BaseActivity
     @Override
     protected void onStart() {
         super.onStart();
+
+        savedUsersView.setUsers(savedUsersManager.getSavedUsers());
 
         if (!nearbyGoogleApiClient.isConnected() && !nearbyGoogleApiClient.isConnecting()) {
             nearbyGoogleApiClient.connect();

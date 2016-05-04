@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.List;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
@@ -61,6 +63,14 @@ public final class UsersView extends LinearLayout {
             userView.bindUser(user);
             userViewContainer.addView(userView);
             updateEmptyStateVisibility();
+        }
+    }
+
+    public void setUsers(@NonNull final List<User> users) {
+        removeAllUsers();
+
+        for (final User user: users) {
+            addUser(user);
         }
     }
 
