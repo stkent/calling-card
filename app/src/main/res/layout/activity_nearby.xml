@@ -18,7 +18,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Publishing"
+            android:text="Publish"
             android:textSize="20sp" />
 
         <Switch
@@ -35,7 +35,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Subscribing"
+            android:text="Subscribe"
             android:textSize="20sp"
             android:paddingTop="@dimen/activity_vertical_margin" />
 
