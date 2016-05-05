@@ -120,6 +120,7 @@ public final class NearbyActivity extends BaseActivity
                 usersView.addUser(user);
             } catch (final JsonSyntaxException e) {
                 toastError("Invalid message received!");
+                Log.e(TAG, "Invalid message received: " + new String(message.getContent()));
                 Log.e(TAG, "Invalid message exception:", e);
             }
         }
@@ -131,8 +132,10 @@ public final class NearbyActivity extends BaseActivity
                 final User user = GSON.fromJson(new String(message.getContent()), User.class);
 
                 usersView.removeUser(user);
-            } catch (final JsonSyntaxException ignored) {
+            } catch (final JsonSyntaxException e) {
                 toastError("Invalid message reported as lost!");
+                Log.e(TAG, "Invalid message reported as lost: " + new String(message.getContent()));
+                Log.e(TAG, "Invalid message exception:", e);
             }
         }
     };

@@ -8,20 +8,24 @@ import android.support.annotation.Nullable;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 public final class User implements Parcelable {
 
     // Required fields; values must be populated from a valid Google Account
 
     @Expose
+    @SerializedName("name")
     // NonNull whenever isValid returns true;
     private final String name;
 
     @Expose
+    @SerializedName("emailAddress")
     // NonNull whenever isValid returns true;
     private final String emailAddress;
 
     @Expose
+    @SerializedName("id")
     // NonNull whenever isValid returns true;
     private final String id;
 
@@ -29,6 +33,7 @@ public final class User implements Parcelable {
 
     @Expose
     @Nullable
+    @SerializedName("photoUrlString")
     private final Uri photoUrl;
 
     public User(@NonNull final GoogleSignInAccount googleSignInAccount) {
