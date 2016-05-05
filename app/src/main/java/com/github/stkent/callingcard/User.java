@@ -79,6 +79,26 @@ public final class User implements Parcelable {
         return name != null && emailAddress != null && id != null;
     }
 
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (!(o instanceof User)) {
+            return false;
+        }
+
+        final User user = (User) o;
+
+        return id.equals(user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
     // Parcelable
 
     @Override

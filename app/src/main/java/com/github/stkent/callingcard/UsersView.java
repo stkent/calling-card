@@ -87,11 +87,11 @@ public final class UsersView extends LinearLayout {
         }
 
         for (int index = userViewContainer.getChildCount() - 1; index >= 0; index--) {
-            final View child = getChildAt(index);
+            final View child = userViewContainer.getChildAt(index);
             final User viewUser = (User) child.getTag();
 
             if (userToRemove.equals(viewUser)) {
-                removeViewAt(index);
+                userViewContainer.removeViewAt(index);
 
                 displayedUsers.remove(userToRemove);
 
