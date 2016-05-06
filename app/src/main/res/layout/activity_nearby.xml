@@ -65,10 +65,10 @@
         </LinearLayout>
 
         <com.github.stkent.callingcard.UsersView
-            android:id="@+id/users_view"
+            android:id="@+id/nearby_users_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:empty_state_text="No nearby users detected!" />
+            app:empty_state_text="No new nearby users detected!" />
 
         <TextView
             android:id="@+id/saved_cards_label"

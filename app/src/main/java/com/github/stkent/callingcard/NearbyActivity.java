@@ -2,6 +2,7 @@ package com.github.stkent.callingcard;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.net.Uri;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,11 +38,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
 public final class NearbyActivity extends BaseActivity
-        implements ConnectionCallbacks, OnConnectionFailedListener, OnCheckedChangeListener {
+        implements ConnectionCallbacks, OnConnectionFailedListener, OnCheckedChangeListener, UsersView.UserClickListener {
 
     private static final String TAG = "MainActivity";
 
@@ -117,7 +122,10 @@ public final class NearbyActivity extends BaseActivity
             try {
                 final User user = GSON.fromJson(new String(message.getContent()), User.class);
 
-                usersView.addUser(user);
+                if (!nearbyUsers.contains(user)) {
+                    nearbyUsers.add(user);
+                    refreshNearbyUsersView();
+                }
             } catch (final JsonSyntaxException e) {
                 toastError("Invalid message received!");
                 Log.e(TAG, "Invalid message received: " + new String(message.getContent()));
@@ -131,7 +139,10 @@ public final class NearbyActivity extends BaseActivity
             try {
                 final User user = GSON.fromJson(new String(message.getContent()), User.class);
 
-                usersView.removeUser(user);
+                if (nearbyUsers.contains(user)) {
+                    nearbyUsers.remove(user);
+                    nearbyUsersView.setUsers(nearbyUsers);
+                }
             } catch (final JsonSyntaxException e) {
                 toastError("Invalid message reported as lost!");
                 Log.e(TAG, "Invalid message reported as lost: " + new String(message.getContent()));
@@ -149,14 +160,16 @@ public final class NearbyActivity extends BaseActivity
     @Bind(R.id.subscribing_switch)
     protected Switch subscribingSwitch;
 
-    @Bind(R.id.users_view)
-    protected UsersView usersView;
+    @Bind(R.id.nearby_users_view)
+    protected UsersView nearbyUsersView;
 
     @Bind(R.id.saved_users_view)
     protected UsersView savedUsersView;
 
     private Message messageToPublish;
     private GoogleApiClient nearbyGoogleApiClient;
+    private List<User> nearbyUsers = new ArrayList<>();
+    private List<User> savedUsers = new ArrayList<>();
     private SavedUsersManager savedUsersManager;
     private boolean attemptingToPublish = false;
     private boolean attemptingToSubscribe = false;
@@ -174,6 +187,9 @@ public final class NearbyActivity extends BaseActivity
         publishedUserView.bindUser(user);
         publishedUserView.setPublishing(false);
         messageToPublish = new Message(GSON.toJson(user).getBytes());
+
+        nearbyUsersView.setUserClickListener(this);
+        savedUsersView.setUserClickListener(this);
 
         savedUsersManager = new SavedUsersManager(
                 PreferenceManager.getDefaultSharedPreferences(this),
@@ -227,7 +243,8 @@ public final class NearbyActivity extends BaseActivity
     protected void onStart() {
         super.onStart();
 
-        savedUsersView.setUsers(savedUsersManager.getSavedUsers());
+        savedUsers = savedUsersManager.getSavedUsers();
+        savedUsersView.setUsers(savedUsers);
 
         if (!nearbyGoogleApiClient.isConnected() && !nearbyGoogleApiClient.isConnecting()) {
             nearbyGoogleApiClient.connect();
@@ -343,6 +360,15 @@ public final class NearbyActivity extends BaseActivity
         }
     }
 
+    @Override
+    public void onUserClick(@NonNull final User user) {
+        if (savedUsers.contains(user)) {
+            showDeleteUserDialog(user);
+        } else {
+            showSaveUserDialog(user);
+        }
+    }
+
     private void cancelAllNearbyOperations() {
         publishingSwitch.setChecked(false);
         subscribingSwitch.setChecked(false);
@@ -353,7 +379,7 @@ public final class NearbyActivity extends BaseActivity
 
         syncSwitchEnabledStatesWithGoogleApiClientState();
 
-        usersView.removeAllUsers();
+        nearbyUsersView.removeAllUsers();
     }
 
     private void attemptToPublish() {
@@ -430,7 +456,7 @@ public final class NearbyActivity extends BaseActivity
     private void stopSubscribing() {
         // TODO: check PendingResult of this call and retry if it is not a success?
         Nearby.Messages.unsubscribe(nearbyGoogleApiClient, messageListener);
-        usersView.removeAllUsers();
+        nearbyUsersView.removeAllUsers();
     }
 
     private void syncSwitchEnabledStatesWithGoogleApiClientState() {
@@ -438,6 +464,56 @@ public final class NearbyActivity extends BaseActivity
 
         publishingSwitch.setEnabled(googleApiClientConnected);
         subscribingSwitch.setEnabled(googleApiClientConnected);
+    }
+
+    private AlertDialog.Builder getDefaultAlertBuilder() {
+       return new AlertDialog.Builder(this)
+                .setCancelable(false)
+                .setNegativeButton("Cancel", null);
+    }
+
+    private void showSaveUserDialog(@NonNull final User user) {
+        getDefaultAlertBuilder()
+                .setMessage("Save " + user.getName() + "'s info?")
+                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(final DialogInterface dialog, final int which) {
+                        savedUsers.add(user);
+                        savedUsersView.setUsers(savedUsers);
+                        savedUsersManager.saveUser(user);
+
+                        refreshNearbyUsersView();
+                    }
+                })
+                .show();
+    }
+
+    private void showDeleteUserDialog(@NonNull final User user) {
+        getDefaultAlertBuilder()
+                .setMessage("Delete " + user.getName() + "'s info?")
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(final DialogInterface dialog, final int which) {
+                        savedUsers.remove(user);
+                        savedUsersView.setUsers(savedUsers);
+                        savedUsersManager.deleteUser(user);
+
+                        refreshNearbyUsersView();
+                    }
+                })
+                .show();
+    }
+
+
+    /**
+     * Using a filtering method here allows us to display nearby user info immediately after
+     * deletion. (If we discarded nearby user info up front if we detected they were already saved,
+     * this would not be possible.)
+     */
+    private void refreshNearbyUsersView() {
+        final List<User> usersToDisplay = new ArrayList<>(nearbyUsers);
+        usersToDisplay.removeAll(savedUsers);
+        nearbyUsersView.setUsers(usersToDisplay);
     }
 
     private void toastSignOutFailedError() {

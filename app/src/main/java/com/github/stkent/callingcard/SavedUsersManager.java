@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
@@ -29,19 +30,22 @@ public final class SavedUsersManager {
 
     @NonNull
     public List<User> getSavedUsers() {
+        sharedPreferences.edit().clear().apply();
         final String savedUsersString = sharedPreferences.getString(SAVED_USERS_KEY, null);
 
         if (savedUsersString == null) {
             return new ArrayList<>();
         }
 
-        // todo: handle parsing failures here...
-        // todo: this should be handled off the main thread
-        return configuredGsonInstance
-                .fromJson(savedUsersString, new TypeToken<List<User>>(){}.getType());
+        try {
+            return configuredGsonInstance
+                    .fromJson(savedUsersString, new TypeToken<List<User>>() {}.getType());
+        } catch (final JsonParseException e) {
+            return new ArrayList<>();
+        }
     }
 
-    public void saveUser(@NonNull final User user) {
+    public List<User> saveUser(@NonNull final User user) {
         final List<User> savedUsers = getSavedUsers();
 
         if (!savedUsers.contains(user)) {
@@ -52,6 +56,23 @@ public final class SavedUsersManager {
                     .putString(SAVED_USERS_KEY, configuredGsonInstance.toJson(savedUsers))
                     .apply();
         }
+
+        return savedUsers;
+    }
+
+    public List<User> deleteUser(@NonNull final User user) {
+        final List<User> savedUsers = getSavedUsers();
+
+        if (savedUsers.contains(user)) {
+            savedUsers.remove(user);
+
+            sharedPreferences
+                    .edit()
+                    .putString(SAVED_USERS_KEY, configuredGsonInstance.toJson(savedUsers))
+                    .apply();
+        }
+
+        return savedUsers;
     }
 
 }

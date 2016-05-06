@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -20,7 +21,11 @@ import butterknife.ButterKnife;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
-public final class UsersView extends LinearLayout {
+public final class UsersView extends LinearLayout implements OnClickListener {
+
+    public interface UserClickListener {
+        void onUserClick(@NonNull final User user);
+    }
 
     @Bind(R.id.empty_state_view)
     protected TextView emptyStateLabel;
@@ -28,7 +33,11 @@ public final class UsersView extends LinearLayout {
     @Bind(R.id.user_view_container)
     protected ViewGroup userViewContainer;
 
+    @NonNull
     private final List<User> displayedUsers = new ArrayList<>();
+
+    @Nullable
+    private UserClickListener userClickListener;
 
     public UsersView(@NonNull final Context context) {
         this(context, null);
@@ -60,11 +69,25 @@ public final class UsersView extends LinearLayout {
         typedArray.recycle();
     }
 
+    @Override
+    public void onClick(final View v) {
+        final User clickedUser = (User) v.getTag();
+
+        if (userClickListener != null) {
+            userClickListener.onUserClick(clickedUser);
+        }
+    }
+
+    public void setUserClickListener(@NonNull final UserClickListener userClickListener) {
+        this.userClickListener = userClickListener;
+    }
+
     public void addUser(@NonNull final User userToAdd) {
         if (userToAdd.isValid() && !displayedUsers.contains(userToAdd)) {
             final UserView userView = new UserView(getContext());
             userView.bindUser(userToAdd);
             userView.setTag(userToAdd);
+            userView.setOnClickListener(this);
             userViewContainer.addView(userView);
 
             displayedUsers.add(userToAdd);
