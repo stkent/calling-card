@@ -1,32 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <LinearLayout
+    <ImageView
+        android:id="@+id/photo_image_view"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:id="@+id/name_field"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:textSize="22sp" />
 
-        <ImageView
-            android:id="@+id/photo_image_view"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
-            android:paddingBottom="8dp" />
-
-        <TextView
-            android:id="@+id/name_field"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="22sp"
-            tools:text="BoJack Horseman" />
-
-        <TextView
-            android:id="@+id/email_address_field"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:text="bojack@horseman.com" />
-
-    </LinearLayout>
+    <TextView
+        android:id="@+id/email_address_field"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 </merge>

@@ -1,16 +1,21 @@
 package com.github.stkent.callingcard;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.CardView;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -20,8 +25,28 @@ import butterknife.ButterKnife;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static com.github.stkent.callingcard.UserView.BorderColor.GREEN;
+import static com.github.stkent.callingcard.UserView.BorderColor.GREY;
+import static com.github.stkent.callingcard.UserView.BorderColor.RED;
 
-public class UserView extends CardView {
+public final class UserView extends LinearLayout {
+
+    enum BorderColor {
+        GREY, GREEN, RED;
+
+        @ColorInt
+        public int getColorInt() {
+            switch (this) {
+                case GREEN:
+                    return Color.rgb(113, 217, 114);
+                case RED:
+                    return Color.rgb(255, 127, 128);
+                default:
+                case GREY:
+                    return Color.LTGRAY;
+        }
+            }
+    }
 
     private static final String TAG = "UserView";
 
@@ -52,15 +77,17 @@ public class UserView extends CardView {
 
         super(context, attrs, defStyleAttr);
         setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+        setOrientation(VERTICAL);
+        setBorderColor(GREY);
 
         final int padding = getResources().getDimensionPixelSize(R.dimen.user_view_padding);
-        setContentPadding(padding, padding, padding, padding);
+        setPadding(padding, padding, padding, padding);
 
         LayoutInflater.from(context).inflate(R.layout.include_user_view, this);
         ButterKnife.bind(this);
     }
 
-    public final void bindUser(@NonNull final User user) {
+    public void bindUser(@NonNull final User user) {
         nameField.setText(user.getName());
         emailAddressField.setText(user.getEmailAddress());
 
@@ -85,6 +112,20 @@ public class UserView extends CardView {
                     .fit()
                     .into(photoImageView);
         }
+    }
+
+    public void setPublishing(final boolean publishing) {
+        setBorderColor(publishing ? GREEN : RED);
+    }
+
+    private void setBorderColor(@NonNull final BorderColor borderColor) {
+        final Drawable backgroundDrawable
+                = ContextCompat.getDrawable(getContext(), R.drawable.card_background);
+
+        backgroundDrawable.mutate()
+                .setColorFilter(borderColor.getColorInt(), PorterDuff.Mode.SRC_ATOP);
+
+        setBackground(backgroundDrawable);
     }
 
 }

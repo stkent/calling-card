@@ -144,7 +144,7 @@ public final class NearbyActivity extends BaseActivity
     protected Switch publishingSwitch;
 
     @Bind(R.id.published_user_view)
-    protected PublishedUserView publishedUserView;
+    protected UserView publishedUserView;
 
     @Bind(R.id.subscribing_switch)
     protected Switch subscribingSwitch;
@@ -172,6 +172,7 @@ public final class NearbyActivity extends BaseActivity
 
         final User user = getIntent().getParcelableExtra(USER_DATA_EXTRA_KEY);
         publishedUserView.bindUser(user);
+        publishedUserView.setPublishing(false);
         messageToPublish = new Message(GSON.toJson(user).getBytes());
 
         savedUsersManager = new SavedUsersManager(
