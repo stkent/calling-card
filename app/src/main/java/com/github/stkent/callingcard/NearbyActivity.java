@@ -200,6 +200,8 @@ public final class NearbyActivity extends BaseActivity
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
+        syncSwitchEnabledStatesWithGoogleApiClientState();
     }
 
     @Override
@@ -219,6 +221,7 @@ public final class NearbyActivity extends BaseActivity
                                 @Override
                                 public void onResult(@NonNull final Status status) {
                                     cancelAllNearbyOperations();
+                                    disconnectNearbyGoogleApiClient();
 
                                     NearbyActivity.this.startActivity(
                                             new Intent(NearbyActivity.this, SignInActivity.class));
@@ -254,6 +257,7 @@ public final class NearbyActivity extends BaseActivity
     @Override
     protected void onStop() {
         cancelAllNearbyOperations();
+        disconnectNearbyGoogleApiClient();
         super.onStop();
     }
 
@@ -373,13 +377,15 @@ public final class NearbyActivity extends BaseActivity
         publishingSwitch.setChecked(false);
         subscribingSwitch.setChecked(false);
 
+        nearbyUsersView.removeAllUsers();
+    }
+
+    private void disconnectNearbyGoogleApiClient() {
         if (nearbyGoogleApiClient.isConnected() || nearbyGoogleApiClient.isConnecting()) {
             nearbyGoogleApiClient.disconnect();
         }
 
         syncSwitchEnabledStatesWithGoogleApiClientState();
-
-        nearbyUsersView.removeAllUsers();
     }
 
     private void attemptToPublish() {
