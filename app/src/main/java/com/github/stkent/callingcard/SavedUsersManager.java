@@ -30,7 +30,6 @@ public final class SavedUsersManager {
 
     @NonNull
     public List<User> getSavedUsers() {
-        sharedPreferences.edit().clear().apply();
         final String savedUsersString = sharedPreferences.getString(SAVED_USERS_KEY, null);
 
         if (savedUsersString == null) {
