@@ -17,7 +17,7 @@
 
         <meta-data
             android:name="com.google.android.nearby.messages.API_KEY"
-            android:value="AIzaSyBf38N9mpmKRnrpLLXPfCqLSL_i0fnuN2o" />
+            android:value="AIzaSyD-D9VHyEMqgudg7bnHyN-eE2ihlcmai84" />
 
         <activity
             android:name=".SignInActivity"

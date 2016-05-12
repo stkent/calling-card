@@ -1,0 +1,44 @@
+{
+  "project_info": {
+    "project_number": "338760961599",
+    "project_id": "callingcard-1246"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:338760961599:android:ae8840204934d18a",
+        "android_client_info": {
+          "package_name": "com.github.stkent.callingcard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "338760961599-4i88jnaj76o41p79u5e0q716id7l0s92.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.github.stkent.callingcard",
+            "certificate_hash": "1F98996E067DEFDD0E31E949963E08D3C8F7F1F1"
+          }
+        },
+        {
+          "client_id": "338760961599-b74otoq797qkqi5kt8leglg236968i1g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
