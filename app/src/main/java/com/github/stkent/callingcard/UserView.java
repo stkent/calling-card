@@ -32,20 +32,7 @@ import static com.github.stkent.callingcard.UserView.BorderColor.RED;
 public final class UserView extends LinearLayout {
 
     enum BorderColor {
-        GREY, GREEN, RED;
-
-        @ColorInt
-        public int getColorInt() {
-            switch (this) {
-                case GREEN:
-                    return Color.rgb(113, 217, 114);
-                case RED:
-                    return Color.rgb(255, 127, 128);
-                default:
-                case GREY:
-                    return Color.LTGRAY;
-        }
-            }
+        GREY, GREEN, RED
     }
 
     private static final String TAG = "UserView";
@@ -123,9 +110,22 @@ public final class UserView extends LinearLayout {
                 = ContextCompat.getDrawable(getContext(), R.drawable.card_background);
 
         backgroundDrawable.mutate()
-                .setColorFilter(borderColor.getColorInt(), PorterDuff.Mode.SRC_ATOP);
+                .setColorFilter(getColorInt(borderColor), PorterDuff.Mode.SRC_ATOP);
 
         setBackground(backgroundDrawable);
+    }
+
+    @ColorInt
+    private int getColorInt(@NonNull final BorderColor borderColor) {
+        switch (borderColor) {
+            case GREEN:
+                return ContextCompat.getColor(getContext(), R.color.colorAccent);
+            case RED:
+                return ContextCompat.getColor(getContext(), R.color.colorPrimary);
+            default:
+            case GREY:
+                return Color.LTGRAY;
+        }
     }
 
 }

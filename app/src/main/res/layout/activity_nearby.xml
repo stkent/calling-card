@@ -30,7 +30,7 @@
                 android:textSize="20sp"
                 android:paddingRight="8dp" />
 
-            <Switch
+            <android.support.v7.widget.SwitchCompat
                 android:id="@+id/publishing_switch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -57,7 +57,7 @@
                 android:textSize="20sp"
                 android:paddingRight="8dp" />
 
-            <Switch
+            <android.support.v7.widget.SwitchCompat
                 android:id="@+id/subscribing_switch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />

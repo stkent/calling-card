@@ -11,13 +11,13 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.Switch;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
@@ -123,11 +123,12 @@ public final class NearbyActivity extends BaseActivity
                 final User user = GSON.fromJson(new String(message.getContent()), User.class);
 
                 if (!nearbyUsers.contains(user)) {
+                    Log.d(TAG, "Discovered " + user.getName());
+
                     nearbyUsers.add(user);
                     refreshUsersViews();
                 }
             } catch (final JsonSyntaxException e) {
-                toastError("Invalid message received!");
                 Log.e(TAG, "Invalid message received: " + new String(message.getContent()));
                 Log.e(TAG, "Invalid message exception:", e);
             }
@@ -140,11 +141,12 @@ public final class NearbyActivity extends BaseActivity
                 final User user = GSON.fromJson(new String(message.getContent()), User.class);
 
                 if (nearbyUsers.contains(user)) {
+                    Log.d(TAG, "Lost " + user.getName());
+
                     nearbyUsers.remove(user);
                     refreshUsersViews();
                 }
             } catch (final JsonSyntaxException e) {
-                toastError("Invalid message reported as lost!");
                 Log.e(TAG, "Invalid message reported as lost: " + new String(message.getContent()));
                 Log.e(TAG, "Invalid message exception:", e);
             }
@@ -155,13 +157,13 @@ public final class NearbyActivity extends BaseActivity
     private final List<User> savedUsers = new ArrayList<>();
 
     @Bind(R.id.publishing_switch)
-    protected Switch publishingSwitch;
+    protected SwitchCompat publishingSwitch;
 
     @Bind(R.id.published_user_view)
     protected UserView publishedUserView;
 
     @Bind(R.id.subscribing_switch)
-    protected Switch subscribingSwitch;
+    protected SwitchCompat subscribingSwitch;
 
     @Bind(R.id.nearby_users_view)
     protected UsersView nearbyUsersView;
