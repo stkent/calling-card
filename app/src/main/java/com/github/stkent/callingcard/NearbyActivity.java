@@ -124,7 +124,7 @@ public final class NearbyActivity extends BaseActivity
 
                 if (!nearbyUsers.contains(user)) {
                     nearbyUsers.add(user);
-                    refreshNearbyUsersView();
+                    refreshUsersViews();
                 }
             } catch (final JsonSyntaxException e) {
                 toastError("Invalid message received!");
@@ -141,7 +141,7 @@ public final class NearbyActivity extends BaseActivity
 
                 if (nearbyUsers.contains(user)) {
                     nearbyUsers.remove(user);
-                    nearbyUsersView.setUsers(nearbyUsers);
+                    refreshUsersViews();
                 }
             } catch (final JsonSyntaxException e) {
                 toastError("Invalid message reported as lost!");
@@ -150,6 +150,9 @@ public final class NearbyActivity extends BaseActivity
             }
         }
     };
+
+    private final List<User> nearbyUsers = new ArrayList<>();
+    private final List<User> savedUsers = new ArrayList<>();
 
     @Bind(R.id.publishing_switch)
     protected Switch publishingSwitch;
@@ -168,8 +171,6 @@ public final class NearbyActivity extends BaseActivity
 
     private Message messageToPublish;
     private GoogleApiClient nearbyGoogleApiClient;
-    private List<User> nearbyUsers = new ArrayList<>();
-    private List<User> savedUsers = new ArrayList<>();
     private SavedUsersManager savedUsersManager;
     private boolean attemptingToPublish = false;
     private boolean attemptingToSubscribe = false;
@@ -246,8 +247,9 @@ public final class NearbyActivity extends BaseActivity
     protected void onStart() {
         super.onStart();
 
-        savedUsers = savedUsersManager.getSavedUsers();
-        savedUsersView.setUsers(savedUsers);
+        savedUsers.clear();
+        savedUsers.addAll(savedUsersManager.getSavedUsers());
+        refreshUsersViews();
 
         if (!nearbyGoogleApiClient.isConnected() && !nearbyGoogleApiClient.isConnecting()) {
             nearbyGoogleApiClient.connect();
@@ -377,7 +379,8 @@ public final class NearbyActivity extends BaseActivity
         publishingSwitch.setChecked(false);
         subscribingSwitch.setChecked(false);
 
-        nearbyUsersView.removeAllUsers();
+        nearbyUsers.clear();
+        refreshUsersViews();
     }
 
     private void disconnectNearbyGoogleApiClient() {
@@ -462,7 +465,8 @@ public final class NearbyActivity extends BaseActivity
     private void stopSubscribing() {
         // TODO: check PendingResult of this call and retry if it is not a success?
         Nearby.Messages.unsubscribe(nearbyGoogleApiClient, messageListener);
-        nearbyUsersView.removeAllUsers();
+        nearbyUsers.clear();
+        refreshUsersViews();
     }
 
     private void syncSwitchEnabledStatesWithGoogleApiClientState() {
@@ -484,11 +488,7 @@ public final class NearbyActivity extends BaseActivity
                 .setPositiveButton("Save", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(final DialogInterface dialog, final int which) {
-                        savedUsers.add(user);
-                        savedUsersView.setUsers(savedUsers);
-                        savedUsersManager.saveUser(user);
-
-                        refreshNearbyUsersView();
+                        saveUser(user);
                     }
                 })
                 .show();
@@ -500,26 +500,39 @@ public final class NearbyActivity extends BaseActivity
                 .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(final DialogInterface dialog, final int which) {
-                        savedUsers.remove(user);
-                        savedUsersView.setUsers(savedUsers);
-                        savedUsersManager.deleteUser(user);
-
-                        refreshNearbyUsersView();
+                        deleteSavedUser(user);
                     }
                 })
                 .show();
     }
 
+    private void saveUser(@NonNull final User user) {
+        if (!savedUsers.contains(user)) {
+            savedUsers.add(user);
+            refreshUsersViews();
+            updatePersistedSavedUsers();
+        }
+    }
 
-    /**
-     * Using a filtering method here allows us to display nearby user info immediately after
-     * deletion. (If we discarded nearby user info up front if we detected they were already saved,
-     * this would not be possible.)
-     */
-    private void refreshNearbyUsersView() {
+    private void deleteSavedUser(@NonNull final User user) {
+        final boolean userWasDeleted = savedUsers.remove(user);
+
+        if (userWasDeleted) {
+            refreshUsersViews();
+            updatePersistedSavedUsers();
+        }
+    }
+
+    private void refreshUsersViews() {
+        savedUsersView.setUsers(savedUsers);
+
         final List<User> usersToDisplay = new ArrayList<>(nearbyUsers);
         usersToDisplay.removeAll(savedUsers);
         nearbyUsersView.setUsers(usersToDisplay);
+    }
+
+    private void updatePersistedSavedUsers() {
+        savedUsersManager.setUsers(savedUsers);
     }
 
     private void toastSignOutFailedError() {

@@ -44,34 +44,11 @@ public final class SavedUsersManager {
         }
     }
 
-    public List<User> saveUser(@NonNull final User user) {
-        final List<User> savedUsers = getSavedUsers();
-
-        if (!savedUsers.contains(user)) {
-            savedUsers.add(user);
-
-            sharedPreferences
-                    .edit()
-                    .putString(SAVED_USERS_KEY, configuredGsonInstance.toJson(savedUsers))
-                    .apply();
-        }
-
-        return savedUsers;
-    }
-
-    public List<User> deleteUser(@NonNull final User user) {
-        final List<User> savedUsers = getSavedUsers();
-
-        if (savedUsers.contains(user)) {
-            savedUsers.remove(user);
-
-            sharedPreferences
-                    .edit()
-                    .putString(SAVED_USERS_KEY, configuredGsonInstance.toJson(savedUsers))
-                    .apply();
-        }
-
-        return savedUsers;
+    public void setUsers(@NonNull final List<User> users) {
+        sharedPreferences
+                .edit()
+                .putString(SAVED_USERS_KEY, configuredGsonInstance.toJson(users))
+                .apply();
     }
 
 }
