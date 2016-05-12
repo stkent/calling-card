@@ -33,24 +33,12 @@ android {
         def baseAppName = "Calling Card"
 
         debug {
-            applicationIdSuffix = ".debug"
-            manifestPlaceholders = [
-                    appName: "$baseAppName (Debug)",
-                    nearbyApiKey: "AIzaSyAs64F4PY-7Vq8PqKSsC6949js1gBjsX2c"
-            ]
+            manifestPlaceholders = [appName: "$baseAppName (Debug)"]
         }
 
         release {
             signingConfig signingConfigs.release
-
-            def nearbyApiKeyName = "nearbyApiKey"
-
-            if (hasProperty(nearbyApiKeyName)) {
-                manifestPlaceholders = [
-                        appName: baseAppName,
-                        nearbyApiKey: (String) getProperty(nearbyApiKeyName)
-                ]
-            }
+            manifestPlaceholders = [appName: baseAppName]
         }
     }
 }
