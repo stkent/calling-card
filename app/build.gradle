@@ -11,6 +11,48 @@ android {
         versionCode 1
         versionName "1.0.0"
     }
+
+    signingConfigs {
+        release {
+            String releasePropFileName = System.properties['user.home'] + "/.callingcard/callingcard.properties"
+            String releaseKeyStoreFileName = System.properties['user.home'] + "/.callingcard/callingcard.jks"
+
+            if (file(releasePropFileName).exists() && file(releaseKeyStoreFileName).exists()) {
+                Properties releaseProps = new Properties()
+                releaseProps.load(new FileInputStream(releasePropFileName))
+
+                storeFile file(releaseKeyStoreFileName)
+                storePassword releaseProps.password
+                keyAlias releaseProps.alias
+                keyPassword releaseProps.password
+            }
+        }
+    }
+
+    buildTypes {
+        def baseAppName = "Calling Card"
+
+        debug {
+            applicationIdSuffix = ".debug"
+            manifestPlaceholders = [
+                    appName: "$baseAppName (Debug)",
+                    nearbyApiKey: "AIzaSyAs64F4PY-7Vq8PqKSsC6949js1gBjsX2c"
+            ]
+        }
+
+        release {
+            signingConfig signingConfigs.release
+
+            def nearbyApiKeyName = "nearbyApiKey"
+
+            if (hasProperty(nearbyApiKeyName)) {
+                manifestPlaceholders = [
+                        appName: baseAppName,
+                        nearbyApiKey: (String) getProperty(nearbyApiKeyName)
+                ]
+            }
+        }
+    }
 }
 
 dependencies {

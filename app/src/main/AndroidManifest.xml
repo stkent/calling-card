@@ -10,14 +10,14 @@
         android:name=".CustomApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="${appName}"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
 
         <meta-data
             android:name="com.google.android.nearby.messages.API_KEY"
-            android:value="AIzaSyAs64F4PY-7Vq8PqKSsC6949js1gBjsX2c" />
+            android:value="${nearbyApiKey}" />
 
         <activity
             android:name=".SignInActivity"
