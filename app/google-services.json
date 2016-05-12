@@ -13,6 +13,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "338760961599-2frek3eaa277sbd953gg0r2jvqa9medm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.github.stkent.callingcard",
+            "certificate_hash": "667A66D26BB3E65510FE9F3C85579C6F2210E7F7"
+          }
+        },
+        {
           "client_id": "338760961599-4i88jnaj76o41p79u5e0q716id7l0s92.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
