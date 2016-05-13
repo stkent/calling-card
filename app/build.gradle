@@ -8,7 +8,7 @@ android {
         applicationId "com.github.stkent.callingcard"
         minSdkVersion 18
         targetSdkVersion 23
-        versionCode 2
+        versionCode 3
         versionName "1.0.0"
     }
 
@@ -48,7 +48,6 @@ dependencies {
     def playServicesVersion = '8.4.0'
 
     compile "com.android.support:appcompat-v7:$supportLibraryVersion"
-    compile "com.android.support:cardview-v7:$supportLibraryVersion"
     compile "com.google.android.gms:play-services-nearby:$playServicesVersion"
     compile "com.google.android.gms:play-services-auth:$playServicesVersion"
 
