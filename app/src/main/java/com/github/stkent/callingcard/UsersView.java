@@ -88,6 +88,15 @@ public final class UsersView extends LinearLayout implements OnClickListener {
             userView.bindUser(userToAdd);
             userView.setTag(userToAdd);
             userView.setOnClickListener(this);
+
+            if (userViewContainer.getChildCount() > 0) {
+                userViewContainer.addView(
+                        LayoutInflater.from(getContext()).inflate(
+                                R.layout.include_users_view_spacer,
+                                userViewContainer,
+                                false));
+            }
+
             userViewContainer.addView(userView);
 
             displayedUsers.add(userToAdd);
@@ -101,25 +110,6 @@ public final class UsersView extends LinearLayout implements OnClickListener {
 
         for (final User user: users) {
             addUser(user);
-        }
-    }
-
-    public void removeUser(@NonNull final User userToRemove) {
-        if (!displayedUsers.contains(userToRemove)) {
-            return;
-        }
-
-        for (int index = userViewContainer.getChildCount() - 1; index >= 0; index--) {
-            final View child = userViewContainer.getChildAt(index);
-            final User viewUser = (User) child.getTag();
-
-            if (userToRemove.equals(viewUser)) {
-                userViewContainer.removeViewAt(index);
-
-                displayedUsers.remove(userToRemove);
-
-                updateEmptyStateVisibility();
-            }
         }
     }
 
