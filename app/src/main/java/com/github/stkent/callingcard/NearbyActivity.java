@@ -40,7 +40,7 @@ import com.google.gson.JsonSyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public final class NearbyActivity extends BaseActivity
@@ -154,19 +154,19 @@ public final class NearbyActivity extends BaseActivity
     private final List<User> nearbyUsers = new ArrayList<>();
     private final List<User> savedUsers = new ArrayList<>();
 
-    @Bind(R.id.publishing_switch)
+    @BindView(R.id.publishing_switch)
     protected SwitchCompat publishingSwitch;
 
-    @Bind(R.id.published_user_view)
+    @BindView(R.id.published_user_view)
     protected UserView publishedUserView;
 
-    @Bind(R.id.subscribing_switch)
+    @BindView(R.id.subscribing_switch)
     protected SwitchCompat subscribingSwitch;
 
-    @Bind(R.id.nearby_users_view)
+    @BindView(R.id.nearby_users_view)
     protected UsersView nearbyUsersView;
 
-    @Bind(R.id.saved_users_view)
+    @BindView(R.id.saved_users_view)
     protected UsersView savedUsersView;
 
     private Message messageToPublish;
