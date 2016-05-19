@@ -47,7 +47,7 @@ import butterknife.ButterKnife;
 public final class NearbyActivity extends BaseActivity
         implements ConnectionCallbacks, OnConnectionFailedListener, OnCheckedChangeListener, UsersView.UserClickListener {
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "NearbyActivity";
 
     private static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(Uri.class, new UriTypeAdapter())
