@@ -388,6 +388,7 @@ public final class NearbyActivity extends BaseActivity
 
     private void publish() {
         Nearby.Messages.publish(nearbyGoogleApiClient, messageToPublish, publishOptions);
+        publishedUserView.setPublishing(true);
     }
 
     private void stopPublishing() {
