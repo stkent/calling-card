@@ -265,8 +265,6 @@ public final class NearbyActivity extends BaseActivity
             final int resultCode,
             final Intent data) {
 
-        super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == NEARBY_PERMISSION_ERROR_RESOLUTION_CODE) {
             if (resultCode == RESULT_OK) {
                 Log.d(TAG, "Nearby permission request granted.");
