@@ -1,6 +1,5 @@
 package com.github.stkent.callingcard;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -54,8 +53,7 @@ public final class NearbyActivity extends BaseActivity
             .create();
 
     private static final String USER_DATA_EXTRA_KEY = "USER_DATA_EXTRA_KEY";
-    private static final int PUBLISHING_ERROR_RESOLUTION_CODE = 5321;
-    private static final int SUBSCRIBING_ERROR_RESOLUTION_CODE = 6546;
+    private static final int NEARBY_PERMISSION_ERROR_RESOLUTION_CODE = 7839;
 
     protected static void launchWithUserData(
             @NonNull final User user,
@@ -174,8 +172,6 @@ public final class NearbyActivity extends BaseActivity
     private Message messageToPublish;
     private GoogleApiClient nearbyGoogleApiClient;
     private SavedUsersManager savedUsersManager;
-    private boolean attemptingToPublish = false;
-    private boolean attemptingToSubscribe = false;
 
     @Override
     protected void onCreate(@Nullable final Bundle savedInstanceState) {
@@ -203,8 +199,6 @@ public final class NearbyActivity extends BaseActivity
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
-
-        syncSwitchEnabledStatesWithGoogleApiClientState();
     }
 
     @Override
@@ -266,29 +260,23 @@ public final class NearbyActivity extends BaseActivity
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(
+            final int requestCode,
+            final int resultCode,
+            final Intent data) {
+
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PUBLISHING_ERROR_RESOLUTION_CODE) {
-            if (attemptingToPublish && resultCode == Activity.RESULT_OK) {
-                // User was presented with the Nearby opt-in dialog and pressed "Allow".
-                attemptToPublish();
+        if (requestCode == NEARBY_PERMISSION_ERROR_RESOLUTION_CODE) {
+            if (resultCode == RESULT_OK) {
+                Log.d(TAG, "Nearby permission request granted.");
+                nearbyGoogleApiClient.connect();
             } else {
-                // User declined to opt-in.
-                publishingSwitch.setChecked(false);
+                Log.e(TAG, "Nearby permission request denied.");
+                cancelAllNearbyOperations();
             }
-
-            attemptingToPublish = false;
-        } else if (requestCode == SUBSCRIBING_ERROR_RESOLUTION_CODE) {
-            if (attemptingToSubscribe && resultCode == Activity.RESULT_OK) {
-                // User was presented with the Nearby opt-in dialog and pressed "Allow".
-                attemptToSubscribe();
-            } else {
-                // User declined to opt-in.
-                subscribingSwitch.setChecked(false);
-            }
-
-            attemptingToSubscribe = false;
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -298,26 +286,24 @@ public final class NearbyActivity extends BaseActivity
             case R.id.publishing_switch:
                 if (publishingSwitch.isChecked()) {
                     if (nearbyGoogleApiClient.isConnected()) {
-                        attemptToPublish();
+                        publish();
                     } else if (!nearbyGoogleApiClient.isConnecting()) {
                         nearbyGoogleApiClient.connect();
                     }
                 } else {
                     stopPublishing();
-                    attemptingToPublish = false;
                 }
 
                 break;
             case R.id.subscribing_switch:
                 if (subscribingSwitch.isChecked()) {
                     if (nearbyGoogleApiClient.isConnected()) {
-                        attemptToSubscribe();
+                        subscribe();
                     } else if (!nearbyGoogleApiClient.isConnecting()) {
                         nearbyGoogleApiClient.connect();
                     }
                 } else {
                     stopSubscribing();
-                    attemptingToSubscribe = false;
                 }
 
                 break;
@@ -328,14 +314,12 @@ public final class NearbyActivity extends BaseActivity
 
     @Override
     public void onConnected(@Nullable final Bundle bundle) {
-        syncSwitchEnabledStatesWithGoogleApiClientState();
-
         if (publishingSwitch.isChecked()) {
-            attemptToPublish();
+            publish();
         }
 
         if (subscribingSwitch.isChecked()) {
-            attemptToSubscribe();
+            subscribe();
         }
     }
 
@@ -347,9 +331,20 @@ public final class NearbyActivity extends BaseActivity
 
     @Override
     public void onConnectionFailed(@NonNull final ConnectionResult connectionResult) {
-        super.onConnectionFailed(connectionResult);
-        cancelAllNearbyOperations();
-        // TODO: all usual error handling and resolution goes here
+        if (connectionResult.hasResolution()) {
+            Log.e(TAG, "Google API Client connection failed. Attempting to resolve.");
+
+            try {
+                connectionResult
+                        .startResolutionForResult(this, NEARBY_PERMISSION_ERROR_RESOLUTION_CODE);
+            } catch (final IntentSender.SendIntentException e) {
+                cancelAllNearbyOperations();
+                super.onConnectionFailed(connectionResult);
+            }
+        } else {
+            cancelAllNearbyOperations();
+            super.onConnectionFailed(connectionResult);
+        }
     }
 
     @Override
@@ -389,93 +384,29 @@ public final class NearbyActivity extends BaseActivity
         if (nearbyGoogleApiClient.isConnected() || nearbyGoogleApiClient.isConnecting()) {
             nearbyGoogleApiClient.disconnect();
         }
-
-        syncSwitchEnabledStatesWithGoogleApiClientState();
     }
 
-    private void attemptToPublish() {
-        attemptingToPublish = true;
-
-        Nearby.Messages.publish(nearbyGoogleApiClient, messageToPublish, publishOptions)
-                .setResultCallback(new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(@NonNull final Status status) {
-                        if (status.isSuccess() && publishingSwitch.isChecked()) {
-                            publishedUserView.setPublishing(true);
-                            attemptingToPublish = false;
-                        } else if (status.hasResolution() && publishingSwitch.isChecked()) {
-                            try {
-                                status.startResolutionForResult(
-                                        NearbyActivity.this, PUBLISHING_ERROR_RESOLUTION_CODE);
-
-                            } catch (final IntentSender.SendIntentException e) {
-                                publishedUserView.setPublishing(false);
-                                attemptingToPublish = false;
-                                toastError(status.getStatusMessage());
-                            }
-                        } else {
-                            /*
-                             * This branch will be hit if we cancel publishing before the initial
-                             * async call to publish has completed (determined experimentally).
-                             */
-                            publishedUserView.setPublishing(false);
-                            attemptingToPublish = false;
-                            toastError(status.getStatusMessage());
-                            // TODO: error-specific handling if desired
-                        }
-                    }
-                });
+    private void publish() {
+        Nearby.Messages.publish(nearbyGoogleApiClient, messageToPublish, publishOptions);
     }
 
     private void stopPublishing() {
-        // TODO: check PendingResult of this call and retry if it is not a success?
-        Nearby.Messages.unpublish(nearbyGoogleApiClient, messageToPublish);
-        publishedUserView.setPublishing(false);
+        if (nearbyGoogleApiClient.isConnected()) {
+            Nearby.Messages.unpublish(nearbyGoogleApiClient, messageToPublish);
+            publishedUserView.setPublishing(false);
+        }
     }
 
-    private void attemptToSubscribe() {
-        attemptingToSubscribe = true;
-
-        Nearby.Messages.subscribe(nearbyGoogleApiClient, messageListener, subscribeOptions)
-                .setResultCallback(new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(@NonNull final Status status) {
-                        if (status.isSuccess()) {
-                            attemptingToSubscribe = false;
-                        } else if (status.hasResolution() && subscribingSwitch.isChecked()) {
-                            try {
-                                status.startResolutionForResult(
-                                        NearbyActivity.this, SUBSCRIBING_ERROR_RESOLUTION_CODE);
-
-                            } catch (final IntentSender.SendIntentException e) {
-                                attemptingToSubscribe = false;
-                                toastError(status.getStatusMessage());
-                            }
-                        } else {
-                            /*
-                             * This branch will be hit if we cancel subscribing before the initial
-                             * async call to subscribe has completed (determined experimentally).
-                             */
-                            attemptingToSubscribe = false;
-                            toastError(status.getStatusMessage());
-                            // TODO: error-specific handling if desired
-                        }
-                    }
-                });
+    private void subscribe() {
+        Nearby.Messages.subscribe(nearbyGoogleApiClient, messageListener, subscribeOptions);
     }
 
     private void stopSubscribing() {
-        // TODO: check PendingResult of this call and retry if it is not a success?
-        Nearby.Messages.unsubscribe(nearbyGoogleApiClient, messageListener);
-        nearbyUsers.clear();
-        refreshUsersViews();
-    }
-
-    private void syncSwitchEnabledStatesWithGoogleApiClientState() {
-        final boolean googleApiClientConnected = nearbyGoogleApiClient.isConnected();
-
-        publishingSwitch.setEnabled(googleApiClientConnected);
-        subscribingSwitch.setEnabled(googleApiClientConnected);
+        if (nearbyGoogleApiClient.isConnected()) {
+            Nearby.Messages.unsubscribe(nearbyGoogleApiClient, messageListener);
+            nearbyUsers.clear();
+            refreshUsersViews();
+        }
     }
 
     private AlertDialog.Builder getDefaultAlertBuilder() {
