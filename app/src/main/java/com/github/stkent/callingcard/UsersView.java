@@ -15,7 +15,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
@@ -27,10 +27,10 @@ public final class UsersView extends LinearLayout implements OnClickListener {
         void onUserClick(@NonNull final User user);
     }
 
-    @Bind(R.id.empty_state_view)
+    @BindView(R.id.empty_state_view)
     protected TextView emptyStateLabel;
 
-    @Bind(R.id.user_view_container)
+    @BindView(R.id.user_view_container)
     protected ViewGroup userViewContainer;
 
     @NonNull

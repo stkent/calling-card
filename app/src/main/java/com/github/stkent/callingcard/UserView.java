@@ -20,7 +20,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
@@ -40,13 +40,13 @@ public final class UserView extends LinearLayout {
     @DrawableRes
     private static final int PLACEHOLDER_IMAGE_RES = R.drawable.img_placeholder;
 
-    @Bind(R.id.name_field)
+    @BindView(R.id.name_field)
     protected TextView nameField;
 
-    @Bind(R.id.email_address_field)
+    @BindView(R.id.email_address_field)
     protected TextView emailAddressField;
 
-    @Bind(R.id.photo_image_view)
+    @BindView(R.id.photo_image_view)
     protected ImageView photoImageView;
 
     public UserView(final Context context) {

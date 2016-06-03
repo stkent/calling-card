@@ -12,7 +12,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.SignInButton;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public final class SignInActivity extends BaseActivity implements OnClickListener {
@@ -20,7 +20,7 @@ public final class SignInActivity extends BaseActivity implements OnClickListene
     private static final String TAG = "SignInActivity";
     private static final int SIGN_IN_REQUEST_CODE = 9162;
 
-    @Bind(R.id.sign_in_button)
+    @BindView(R.id.sign_in_button)
     protected SignInButton signInButton;
 
     @Override
